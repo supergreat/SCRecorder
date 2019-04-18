@@ -274,9 +274,11 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
                     if ([session canAddOutput:_depthOutput]) {
                         NSError *trueDepthError = nil;
-                        [self configureDevice:trueDepthDevice
-                                    mediaType:AVMediaTypeVideo
-                                        error:&trueDepthError];
+                        AVCaptureDeviceInput *depthInput = [[AVCaptureDeviceInput alloc] initWithDevice:trueDepthDevice error:&trueDepthError];
+                        if ([session canAddInput:depthInput]) {
+                            [session addInput:depthInput];
+                            [self addVideoObservers:depthInput.device];
+                        }
                         if (trueDepthError) {
                             newError = [SCRecorder createError:@"Could not add True Depth device."];
                             _depthOutputAdded = NO;
