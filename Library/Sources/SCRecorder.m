@@ -22,6 +22,7 @@ API_AVAILABLE(ios(11.0))
     AVCaptureMovieFileOutput *_movieOutput;
     AVCaptureAudioDataOutput *_audioOutput;
     AVCaptureStillImageOutput *_photoOutput;
+    AVCaptureDeviceFormat *_activeDepthDataFormat;
     SCSampleBufferHolder *_lastVideoBuffer;
     SCSampleBufferHolder *_lastAudioBuffer;
     CIContext *_context;
@@ -322,6 +323,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                     [trueDepthDevice lockForConfiguration:&configLockError];
                     if (configLockError == nil) {
                         trueDepthDevice.activeDepthDataFormat = (AVCaptureDeviceFormat *)depth32Formats.lastObject;
+                        _activeDepthDataFormat = (AVCaptureDeviceFormat *)depth32Formats.lastObject;
                         [trueDepthDevice unlockForConfiguration];
                     } else {
                         newError = configLockError;
@@ -1151,6 +1153,10 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                     newDevice.smoothAutoFocusEnabled = YES;
                 }
                 newDevice.subjectAreaChangeMonitoringEnabled = true;
+
+                if (_activeDepthDataFormat != nil && _trueDepthEnabled) {
+                    newDevice.activeDepthDataFormat = _activeDepthDataFormat;
+                }
 
                 if (newDevice.isLowLightBoostSupported) {
                     newDevice.automaticallyEnablesLowLightBoostWhenAvailable = YES;
