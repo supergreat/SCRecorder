@@ -8,14 +8,14 @@
 
 #import "SCRecorder.h"
 #import "SCRecordSession_Internal.h"
-#import "SCPreviewView.h"
+#import "SCPlayerView.h"
 #define dispatch_handler(x) if (x != nil) dispatch_async(dispatch_get_main_queue(), x)
 #define kSCRecorderRecordSessionQueueKey "SCRecorderRecordSessionQueue"
 #define kMinTimeBetweenAppend 0.004
 
 API_AVAILABLE(ios(11.0))
 @interface SCRecorder() <AVCaptureDataOutputSynchronizerDelegate> {
-    SCPreviewView *_playerView;
+    SCPlayerView *_playerView;
     AVCaptureSession *_captureSession;
     UIView *_previewView;
     AVCaptureVideoDataOutput *_videoOutput;
@@ -62,7 +62,7 @@ static char* SCRecorderVideoEnabledContext = "VideoEnabledContext";
 static char* SCRecorderAudioEnabledContext = "AudioEnabledContext";
 static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
-- (id)init {
+- (id)initWithPlayerView:(SCPlayerView *)playerView {
     self = [super init];
 
     if (self) {
@@ -80,7 +80,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
 
         _captureSessionPreset = AVCaptureSessionPresetHigh;
-        _playerView = [[SCPreviewView alloc] initWithFrame:CGRectZero];
+        _playerView = playerView;
         _initializeSessionLazily = YES;
 
         _videoOrientation = AVCaptureVideoOrientationPortrait;
@@ -130,8 +130,12 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     [self unprepare];
 }
 
-+ (SCRecorder*)recorder {
-    return [[SCRecorder alloc] init];
++ (SCRecorder *)recorder {
+    return [[SCRecorder alloc] initWithPlayerView:[[SCPlayerView alloc] initWithFrame:CGRectZero]];
+}
+
++ (SCRecorder *)recorderWithPlayerView:(SCPlayerView *)playerView {
+    return [[SCRecorder alloc] initWithPlayerView:playerView];
 }
 
 - (void)applicationDidEnterBackground:(id)sender {

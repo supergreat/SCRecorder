@@ -17,6 +17,7 @@
 #import "SCPhotoConfiguration.h"
 #import "SCRecorderTools.h"
 #import "SCRecorderDelegate.h"
+#import "SCPlayerView.h"
 
 // Convenience
 #import "SCRecorderHeader.h"
@@ -284,6 +285,7 @@
  @return the newly created recorder
  */
 + (SCRecorder *__nonnull)recorder;
++ (SCRecorder *__nonnull)recorderWithPlayerView:(SCPlayerView *)playerView;
 
 /**
  Create the AVCaptureSession

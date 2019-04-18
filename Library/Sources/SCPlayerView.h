@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SCPreviewView : MTKView
+@interface SCPlayerView : MTKView
 
 @property (nonatomic, assign) CVPixelBufferRef pixelBuffer;
 
