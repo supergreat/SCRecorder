@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7A3AF7112268CAE100618842 /* SCPlayerMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3AF7102268CAE100618842 /* SCPlayerMetalView.swift */; };
-		7A3AF7122268CD1000618842 /* SCPlayerMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3AF7102268CAE100618842 /* SCPlayerMetalView.swift */; };
+		7A44491B2268F62900DF5ED0 /* SCPreviewView.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A4449192268F62900DF5ED0 /* SCPreviewView.h */; };
+		7A44491C2268F62900DF5ED0 /* SCPreviewView.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A4449192268F62900DF5ED0 /* SCPreviewView.h */; };
+		7A44491D2268F62900DF5ED0 /* SCPreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A44491A2268F62900DF5ED0 /* SCPreviewView.m */; };
+		7A44491E2268F62900DF5ED0 /* SCPreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A44491A2268F62900DF5ED0 /* SCPreviewView.m */; };
 		9079317B1BD2A06700D7D181 /* SCFilter+VideoComposition.h in Headers */ = {isa = PBXBuildFile; fileRef = 907931791BD2A06700D7D181 /* SCFilter+VideoComposition.h */; };
 		9079317C1BD2A06700D7D181 /* SCFilter+VideoComposition.m in Sources */ = {isa = PBXBuildFile; fileRef = 9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */; };
 		9079317F1BD451C200D7D181 /* SCFilter+UIImage.h in Headers */ = {isa = PBXBuildFile; fileRef = 9079317D1BD451C200D7D181 /* SCFilter+UIImage.h */; };
@@ -127,8 +129,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		7A3AF70F2268CAE000618842 /* SCRecorder-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SCRecorder-Bridging-Header.h"; sourceTree = "<group>"; };
-		7A3AF7102268CAE100618842 /* SCPlayerMetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCPlayerMetalView.swift; sourceTree = "<group>"; };
+		7A4449192268F62900DF5ED0 /* SCPreviewView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCPreviewView.h; sourceTree = "<group>"; };
+		7A44491A2268F62900DF5ED0 /* SCPreviewView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SCPreviewView.m; sourceTree = "<group>"; };
 		907931791BD2A06700D7D181 /* SCFilter+VideoComposition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SCFilter+VideoComposition.h"; sourceTree = "<group>"; };
 		9079317A1BD2A06700D7D181 /* SCFilter+VideoComposition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SCFilter+VideoComposition.m"; sourceTree = "<group>"; };
 		9079317D1BD451C200D7D181 /* SCFilter+UIImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SCFilter+UIImage.h"; sourceTree = "<group>"; };
@@ -466,8 +468,8 @@
 				DC23C1C51AAF95600013E14C /* SCRecordSessionSegment.h */,
 				DC23C1C61AAF95600013E14C /* SCRecordSessionSegment.m */,
 				DCF3A68E1AB9F4760034CF5C /* SCRecorderDelegate.h */,
-				7A3AF7102268CAE100618842 /* SCPlayerMetalView.swift */,
-				7A3AF70F2268CAE000618842 /* SCRecorder-Bridging-Header.h */,
+				7A4449192268F62900DF5ED0 /* SCPreviewView.h */,
+				7A44491A2268F62900DF5ED0 /* SCPreviewView.m */,
 			);
 			name = Recorder;
 			sourceTree = "<group>";
@@ -541,6 +543,7 @@
 				DC4CBA4D1863118E00532F1F /* SCAudioTools.h in Headers */,
 				90B02E351BC995CD00559011 /* NSURL+SCSaveToCameraRoll.h in Headers */,
 				DCD12AA41B45AA540064674D /* SCIOPixelBuffers.h in Headers */,
+				7A44491B2268F62900DF5ED0 /* SCPreviewView.h in Headers */,
 				DC1949C019C07F1600E92A95 /* SCSampleBufferHolder.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -565,6 +568,7 @@
 				DCDC1E311AC799CF001DC3D9 /* SCPhotoConfiguration.h in Headers */,
 				DCDC1E321AC799CF001DC3D9 /* SCRecordSession.h in Headers */,
 				DCDC1E331AC799CF001DC3D9 /* SCRecorder.h in Headers */,
+				7A44491C2268F62900DF5ED0 /* SCPreviewView.h in Headers */,
 				DCDC1E341AC799CF001DC3D9 /* SCRecordSessionSegment.h in Headers */,
 				DCDC1E351AC799CF001DC3D9 /* SCRecorderDelegate.h in Headers */,
 				DCDC1E361AC799CF001DC3D9 /* SCRecorderFocusTargetView.h in Headers */,
@@ -701,7 +705,7 @@
 				DC50285A18E52023004E833F /* SCRecordSession.m in Sources */,
 				DC23C1C81AAF95600013E14C /* SCRecordSessionSegment.m in Sources */,
 				DCB041681924663700D945D2 /* SCAssetExportSession.m in Sources */,
-				7A3AF7112268CAE100618842 /* SCPlayerMetalView.swift in Sources */,
+				7A44491D2268F62900DF5ED0 /* SCPreviewView.m in Sources */,
 				DCA163961A2028B800505966 /* SCVideoConfiguration.m in Sources */,
 				DCEE378B1B17E6480019C7B5 /* SCContext.m in Sources */,
 				DC50285818E51FC0004E833F /* SCRecorder.m in Sources */,
@@ -744,7 +748,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCEE378E1B17F3D50019C7B5 /* SCWeakSelectorTarget.m in Sources */,
-				7A3AF7122268CD1000618842 /* SCPlayerMetalView.swift in Sources */,
+				7A44491E2268F62900DF5ED0 /* SCPreviewView.m in Sources */,
 				DCEE378F1B17F3D50019C7B5 /* SCFilterAnimation.m in Sources */,
 				DCEE378D1B17F3CA0019C7B5 /* SCContext.m in Sources */,
 				DCDC1E161AC797EF001DC3D9 /* SCVideoConfiguration.m in Sources */,
@@ -795,9 +799,6 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "Sources/SCRecorder-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -814,8 +815,6 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "Sources/SCRecorder-Bridging-Header.h";
-				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -991,6 +990,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_NAME = SCRecorder;
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -1027,6 +1027,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_NAME = SCRecorder;
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
