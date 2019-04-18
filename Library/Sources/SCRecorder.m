@@ -79,7 +79,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         dispatch_set_target_queue(_dataOutputQueue, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0));
 
 
-        _captureSessionPreset = AVCaptureSessionPresetHigh;
+        _captureSessionPreset = AVCaptureSessionPreset1280x720;
         _playerView = playerView;
         _initializeSessionLazily = YES;
 
@@ -849,19 +849,21 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         faceMetadata = [_videoOutput transformedMetadataObjectForMetadataObject:firstFace connection:connection];
     }
 
-    CVPixelBufferRef depthPixelBuffer = CVPixelBufferRetain(syncedDepthData.depthData.depthDataMap);
-    CVPixelBufferRef videoPixelBuffer = CVPixelBufferRetain(CMSampleBufferGetImageBuffer(syncedVideoData.sampleBuffer));
+    CVPixelBufferRef depthPixelBuffer = syncedDepthData.depthData.depthDataMap;
+    CVPixelBufferRetain(depthPixelBuffer);
+    CVPixelBufferRef videoPixelBuffer = CMSampleBufferGetImageBuffer(syncedVideoData.sampleBuffer);
+    CVPixelBufferRetain(videoPixelBuffer);
     CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(syncedVideoData.sampleBuffer);
+    CFRetain(formatDescription);
 
     id<SCRecorderDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(recorder:didOutputVideoPixelBuffer:depthBuffer:formatDescription:faceMetadata:)]) {
         [delegate recorder:self didOutputVideoPixelBuffer:videoPixelBuffer depthBuffer:depthPixelBuffer formatDescription:formatDescription faceMetadata:faceMetadata];
     }
 
-//    _playerView.pixelBuffer = videoPixelBuffer;
-
     CVPixelBufferRelease(videoPixelBuffer);
     CVPixelBufferRelease(depthPixelBuffer);
+    CFRelease(formatDescription);
 }
 
 - (void)_handleVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer withSession:(SCRecordSession *)recordSession connection:(AVCaptureConnection *)connection {
