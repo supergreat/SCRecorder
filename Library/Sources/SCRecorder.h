@@ -135,11 +135,6 @@
 @property (readonly, nonatomic) BOOL isPrepared;
 
 /**
- The preview layer used for the video preview
- */
-//@property (readonly, nonatomic) AVCaptureVideoPreviewLayer *__nonnull previewLayer;
-
-/**
  Convenient way to set a view inside the preview layer
  */
 @property (strong, nonatomic) UIView *__nullable previewView;

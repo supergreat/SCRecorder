@@ -176,9 +176,19 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     if ([videoConnection isVideoOrientationSupported]) {
         videoConnection.videoOrientation = videoOrientation;
     }
-//    if ([_previewLayer.connection isVideoOrientationSupported]) {
-//        _previewLayer.connection.videoOrientation = videoOrientation;
-//    }
+    //    if ([_previewLayer.connection isVideoOrientationSupported]) {
+    //        _previewLayer.connection.videoOrientation = videoOrientation;
+    //    }
+
+    AVCaptureConnection *depthConnection = [_depthOutput connectionWithMediaType:AVMediaTypeDepthData];
+    if ([depthConnection isVideoOrientationSupported]) {
+        depthConnection.videoOrientation = videoOrientation;
+    }
+
+    AVCaptureConnection *metadataConnection = [_metadataOutput connectionWithMediaType:AVMediaTypeMetadata];
+    if ([metadataConnection isVideoOrientationSupported]) {
+        metadataConnection.videoOrientation = videoOrientation;
+    }
 
     AVCaptureConnection *photoConnection = [_photoOutput connectionWithMediaType:AVMediaTypeVideo];
     if ([photoConnection isVideoOrientationSupported]) {
@@ -229,6 +239,14 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         if (self.fastRecordMethodEnabled) {
             if (_movieOutput == nil) {
                 _movieOutput = [AVCaptureMovieFileOutput new];
+            }
+
+            if (_depthOutput != nil && [session.outputs containsObject:_depthOutput]) {
+                [session removeOutput:_depthOutput];
+            }
+
+            if (_metadataOutput != nil && [session.outputs containsObject:_metadataOutput]) {
+                [session removeOutput:_metadataOutput];
             }
 
             if (_videoOutput != nil && [session.outputs containsObject:_videoOutput]) {
@@ -350,6 +368,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                         if (newError == nil) {
                             newError = [SCRecorder createError:@"Cannot add videoOutput inside the session"];
                         }
+                        _videoOutputAdded = NO;
                     }
                 } else {
                     _videoOutputAdded = YES;
@@ -400,7 +419,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         if (@available(iOS 11.0, *)) {
             if (_depthOutputAdded && _metadataOutputAdded && _videoOutputAdded) {
                 _outputSynchronizer = [[AVCaptureDataOutputSynchronizer alloc] initWithDataOutputs:@[_videoOutput, _depthOutput, _metadataOutput]];
-                [_outputSynchronizer setDelegate:self queue:_dataOutputQueue];
             }
         }
 
@@ -429,8 +447,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         *error = _error;
     }
 
-//    _previewLayer.session = session;
-
     [self reconfigureVideoInput:YES audioInput:YES];
 
     [self commitConfiguration];
@@ -444,13 +460,14 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         success = [self prepare:nil];
     }
 
-//    let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
-//    let videoDevicePosition = self.videoDeviceInput.device.position
-//    let rotation = PreviewMetalView.Rotation(with: interfaceOrientation,
-//                                             videoOrientation: videoOrientation,
-//                                             cameraPosition: videoDevicePosition)
+    AVCaptureVideoOrientation *videoOrientation = [_videoOutput connectionWithMediaType:AVMediaTypeVideo].videoOrientation;
+    AVCaptureDevicePosition *devicePosition = self.device;
 
-//    _playerView.mirroring = YES;
+    //    let videoOrientation = self.videoDataOutput.connection(with: .video)!.videoOrientation
+    //    let videoDevicePosition = self.videoDeviceInput.device.position
+    //    let rotation = PreviewMetalView.Rotation(with: interfaceOrientation,
+    //                                             videoOrientation: videoOrientation,
+    //                                             cameraPosition: videoDevicePosition)
 
     dispatch_async(_dataOutputQueue, ^{
         _renderingEnabled = YES;
@@ -554,7 +571,7 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
             _renderingEnabled = NO;
         });
 
-//        _previewLayer.session = nil;
+        //        _previewLayer.session = nil;
         _captureSession = nil;
     }
     [self _reconfigureSession];
@@ -740,6 +757,8 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     size_t bufferHeight = (CGFloat)CVPixelBufferGetHeight(sampleBufferImage);
 
     CMTime time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+    CFTimeInterval seconds = CMTimeGetSeconds(time);
+
     SCFilter *filterGroup = _videoConfiguration.filter;
     SCFilter *transformFilter = [self _transformFilterUsingBufferWidth:bufferWidth bufferHeight:bufferHeight mirrored:
                                  _device == AVCaptureDevicePositionFront
@@ -758,7 +777,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
     }
 
     CIImage *image = [CIImage imageWithCVPixelBuffer:sampleBufferImage];
-    CFTimeInterval seconds = CMTimeGetSeconds(time);
 
     if (transformFilter != nil) {
         image = [transformFilter imageByProcessingImage:image atTime:seconds];
@@ -835,12 +853,13 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 #pragma mark - Data Synchronizer
 
 - (void)dataOutputSynchronizer:(AVCaptureDataOutputSynchronizer *)synchronizer didOutputSynchronizedDataCollection:(AVCaptureSynchronizedDataCollection *)synchronizedDataCollection  API_AVAILABLE(ios(11.0)) {
+    AVCaptureSynchronizedSampleBufferData *syncedVideoData = (AVCaptureSynchronizedSampleBufferData *)[synchronizedDataCollection synchronizedDataForCaptureOutput:_videoOutput];
+
     if (!_renderingEnabled || !_trueDepthEnabled) {
         return;
     }
 
     AVCaptureSynchronizedDepthData *syncedDepthData = (AVCaptureSynchronizedDepthData *)[synchronizedDataCollection synchronizedDataForCaptureOutput:_depthOutput];
-    AVCaptureSynchronizedSampleBufferData *syncedVideoData = (AVCaptureSynchronizedSampleBufferData *)[synchronizedDataCollection synchronizedDataForCaptureOutput:_videoOutput];
     if (syncedDepthData == nil || syncedVideoData == nil || syncedDepthData.depthDataWasDropped || syncedVideoData.sampleBufferWasDropped) {
         return;
     }
@@ -862,7 +881,35 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
     id<SCRecorderDelegate> delegate = self.delegate;
     if ([delegate respondsToSelector:@selector(recorder:didOutputVideoPixelBuffer:depthBuffer:formatDescription:faceMetadata:)]) {
-        [delegate recorder:self didOutputVideoPixelBuffer:videoPixelBuffer depthBuffer:depthPixelBuffer formatDescription:formatDescription faceMetadata:faceMetadata];
+        CVPixelBufferRef modifiedPixelBuffer = [delegate recorder:self didOutputVideoPixelBuffer:videoPixelBuffer depthBuffer:depthPixelBuffer formatDescription:formatDescription faceMetadata:faceMetadata];
+
+        if (!_initializeSessionLazily || _isRecording) {
+            SCRecordSession *recordSession = _session;
+            if (recordSession != nil) {
+                CMSampleBufferRef sampleBufferOut = NULL;
+                CMSampleTimingInfo timingInfo;
+                CMSampleBufferGetSampleTimingInfo(syncedVideoData.sampleBuffer, 0, &timingInfo);
+                timingInfo.duration = CMSampleBufferGetDuration(syncedVideoData.sampleBuffer);
+                timingInfo.presentationTimeStamp = CMSampleBufferGetPresentationTimeStamp(syncedVideoData.sampleBuffer);
+                timingInfo.decodeTimeStamp = CMSampleBufferGetDecodeTimeStamp(syncedVideoData.sampleBuffer);
+                CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault, modifiedPixelBuffer, formatDescription, &timingInfo, &sampleBufferOut);
+                [self _handleVideoSampleBuffer:sampleBufferOut withSession:recordSession connection:connection];
+                CFRelease(sampleBufferOut);
+            }
+        }
+
+        _playerView.pixelBuffer = modifiedPixelBuffer;
+
+        CVPixelBufferRelease(modifiedPixelBuffer);
+    } else {
+        if (!_initializeSessionLazily || _isRecording) {
+            SCRecordSession *recordSession = _session;
+            if (recordSession != nil) {
+                [self _handleVideoSampleBuffer:syncedVideoData.sampleBuffer withSession:recordSession connection:connection];
+            }
+        }
+
+        _playerView.pixelBuffer = videoPixelBuffer;
     }
 
     CVPixelBufferRelease(videoPixelBuffer);
@@ -1001,6 +1048,9 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     if (captureOutput == _videoOutput) {
         _lastVideoBuffer.sampleBuffer = sampleBuffer;
+
+        _playerView.pixelBuffer = (CVPixelBufferRef)CMSampleBufferGetImageBuffer(sampleBuffer);
+
         //        NSLog(@"VIDEO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
 
         if (_videoConfiguration.shouldIgnore) {
@@ -1015,8 +1065,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
                 CFRelease(sampleBuffer);
             });
         }
-
-        _playerView.pixelBuffer = (CVPixelBufferRef)CMSampleBufferGetImageBuffer(sampleBuffer);
     } else if (captureOutput == _audioOutput) {
         _lastAudioBuffer.sampleBuffer = sampleBuffer;
         //        NSLog(@"AUDIO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
@@ -1138,6 +1186,16 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         if ([videoConnection respondsToSelector:@selector(setVideoMirrored:)]) {
             videoConnection.videoMirrored = videoMirrored;
         }
+        AVCaptureConnection *depthConnection = [_depthOutput connectionWithMediaType:AVMediaTypeDepthData];
+        if ([depthConnection respondsToSelector:@selector(setVideoMirrored:)]) {
+            depthConnection.videoMirrored = videoMirrored;
+        }
+
+        AVCaptureConnection *metadataConnection = [_metadataOutput connectionWithMediaType:AVMediaTypeMetadata];
+        if ([metadataConnection respondsToSelector:@selector(setVideoMirrored:)]) {
+            metadataConnection.videoMirrored = videoMirrored;
+        }
+
     }
 }
 
@@ -1149,17 +1207,19 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         if ([mediaType isEqualToString:AVMediaTypeVideo]) {
             NSError *error;
             if ([newDevice lockForConfiguration:&error]) {
-                if (newDevice.isSmoothAutoFocusSupported) {
-                    newDevice.smoothAutoFocusEnabled = YES;
-                }
-                newDevice.subjectAreaChangeMonitoringEnabled = true;
-
-                if (_activeDepthDataFormat != nil && _trueDepthEnabled) {
+                if (_activeDepthDataFormat != nil && _trueDepthEnabled && newDevice == _trueDepthDiscoverySession.devices.firstObject) {
                     newDevice.activeDepthDataFormat = _activeDepthDataFormat;
-                }
+                    [_outputSynchronizer setDelegate:self queue:_sessionQueue];
+                } else {
+                    [_outputSynchronizer setDelegate:nil queue:nil];
+                    if (newDevice.isSmoothAutoFocusSupported) {
+                        newDevice.smoothAutoFocusEnabled = YES;
+                    }
+                    newDevice.subjectAreaChangeMonitoringEnabled = true;
 
-                if (newDevice.isLowLightBoostSupported) {
-                    newDevice.automaticallyEnablesLowLightBoostWhenAvailable = YES;
+                    if (newDevice.isLowLightBoostSupported) {
+                        newDevice.automaticallyEnablesLowLightBoostWhenAvailable = YES;
+                    }
                 }
                 [newDevice unlockForConfiguration];
             } else {
@@ -1256,11 +1316,11 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 #pragma mark - FOCUS
 
 - (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates {
-    return [self.previewLayer captureDevicePointOfInterestForPoint:viewCoordinates];
+    return viewCoordinates;
 }
 
 - (CGPoint)convertPointOfInterestToViewCoordinates:(CGPoint)pointOfInterest {
-    return [self.previewLayer pointForCaptureDevicePointOfInterest:pointOfInterest];
+    return pointOfInterest;
 }
 
 - (void)mediaServicesWereReset:(NSNotification *)notification {
@@ -1488,6 +1548,12 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         [self reconfigureVideoInput:self.videoConfiguration.enabled audioInput:NO];
     }
 
+    if (_device == AVCaptureDevicePositionFront && _mirrorOnFrontCamera) {
+        _playerView.mirroring = YES;
+    } else {
+        _playerView.mirroring = NO;
+    }
+
     [self didChangeValueForKey:@"device"];
 }
 
@@ -1546,11 +1612,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 - (BOOL)deviceHasFlash {
     AVCaptureDevice *currentDevice = [self videoDevice];
     return currentDevice.hasFlash;
-}
-
-- (AVCaptureVideoPreviewLayer*)previewLayer {
-//    return _previewLayer;
-    return nil;
 }
 
 - (BOOL)isPrepared {

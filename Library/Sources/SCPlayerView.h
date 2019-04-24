@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface SCPlayerView : MTKView
 
 @property (nonatomic, assign) CVPixelBufferRef pixelBuffer;
+@property (nonatomic, assign) BOOL mirroring;
 
 @end
 
