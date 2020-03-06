@@ -11,6 +11,7 @@
 #import "SCSampleBufferHolder.h"
 #import "SCVideoPlayerView.h"
 #import "SCPlayer.h"
+#import "SCPlayerView.h"
 #import "SCAssetExportSession.h"
 #import "SCImageView.h"
 #import "SCSwipeableFilterView.h"

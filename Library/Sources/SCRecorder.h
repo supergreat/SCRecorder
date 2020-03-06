@@ -17,6 +17,7 @@
 #import "SCPhotoConfiguration.h"
 #import "SCRecorderTools.h"
 #import "SCRecorderDelegate.h"
+#import "SCPlayerView.h"
 
 // Convenience
 #import "SCRecorderHeader.h"
@@ -57,6 +58,16 @@
  Change the flash mode on the camera
  */
 @property (assign, nonatomic) SCFlashMode flashMode;
+
+/**
+ Enable/disable true-depth data streaming
+ */
+@property (assign, nonatomic) BOOL trueDepthEnabled;
+
+/**
+ True-depth data is available
+ */
+@property (readonly, nonatomic) BOOL trueDepthAvailable;
 
 /**
  Determine whether the device has flash
@@ -112,7 +123,7 @@
 
 /**
  The value of this property defaults to YES, causing the capture session to automatically configure the app’s shared AVAudioSession instance for optimal recording.
- 
+
  If you set this property’s value to NO, your app is responsible for selecting appropriate audio session settings. Recording may fail if the audio session’s settings are incompatible with the capture session.
  */
 @property (assign, nonatomic) BOOL automaticallyConfiguresApplicationAudioSession;
@@ -127,11 +138,6 @@
  Whether the recorder has been prepared.
  */
 @property (readonly, nonatomic) BOOL isPrepared;
-
-/**
- The preview layer used for the video preview
- */
-@property (readonly, nonatomic) AVCaptureVideoPreviewLayer *__nonnull previewLayer;
 
 /**
  Convenient way to set a view inside the preview layer
@@ -180,7 +186,7 @@
 /**
  The maximum record duration. When the record session record duration
  reaches this bound, the recorder will automatically pause the recording,
- end the current record segment and send recorder:didCompletesession: on the 
+ end the current record segment and send recorder:didCompletesession: on the
  delegate.
  */
 @property (assign, nonatomic) CMTime maxRecordDuration;
@@ -188,7 +194,7 @@
 /**
  Whether the fast recording method should be enabled.
  Enabling this will disallow pretty much every features provided
- by SCVideoConfiguration and SCAudioConfiguration. It will internally 
+ by SCVideoConfiguration and SCAudioConfiguration. It will internally
  uses a AVCaptureMovieFileOutput that provides no settings. If you have
  some performance issue, you can try enabling this.
  Default is NO.
@@ -279,6 +285,7 @@
  @return the newly created recorder
  */
 + (SCRecorder *__nonnull)recorder;
++ (SCRecorder *__nonnull)recorderWithPlayerView:(SCPlayerView *)playerView;
 
 /**
  Create the AVCaptureSession
@@ -356,7 +363,7 @@
 - (void)focusCenter;
 
 /**
- Refocus at the current position 
+ Refocus at the current position
  */
 - (void)refocus;
 
