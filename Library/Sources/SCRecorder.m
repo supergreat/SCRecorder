@@ -26,6 +26,7 @@ API_AVAILABLE(ios(11.0))
     AVCaptureDeviceFormat *_activeDepthDataFormat;
     SCSampleBufferHolder *_lastVideoBuffer;
     SCSampleBufferHolder *_lastAudioBuffer;
+    CIDetector *_faceDetector;
     CIContext *_context;
     BOOL _audioInputAdded;
     BOOL _audioOutputAdded;
@@ -1048,10 +1049,35 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 }
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
+    if (!_faceDetector) {
+        _faceDetector = [CIDetector detectorOfType:CIDetectorTypeFace
+                                           context:nil
+                                           options:@{CIDetectorAccuracy: CIDetectorAccuracyLow}];
+    }
+    
     if (captureOutput == _videoOutput) {
         _lastVideoBuffer.sampleBuffer = sampleBuffer;
 
-        _playerView.pixelBuffer = (CVPixelBufferRef)CMSampleBufferGetImageBuffer(sampleBuffer);
+        CVPixelBufferRef pixelBuffer = (CVPixelBufferRef)CMSampleBufferGetImageBuffer(sampleBuffer);
+        _playerView.pixelBuffer = pixelBuffer;
+        
+        CFDictionaryRef attachments = CMCopyDictionaryOfAttachments(kCFAllocatorDefault,
+                                                                    sampleBuffer,
+                                                                    kCMAttachmentMode_ShouldPropagate);
+        
+        CIImage *ciImage = [[CIImage alloc] initWithCVPixelBuffer:pixelBuffer
+                                                           options:(__bridge NSDictionary *)attachments];
+        (attachments)?CFRelease(attachments):nil;
+        
+        NSArray *features = [_faceDetector featuresInImage:ciImage
+                                                   options:nil];
+        
+        id<SCRecorderDelegate> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(recorder:didDetectFaceFeatures:)]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [delegate recorder:self didDetectFaceFeatures:features];
+            });
+        }
 
         //        NSLog(@"VIDEO BUFFER: %fs (%fs)", CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)), CMTimeGetSeconds(CMSampleBufferGetDuration(sampleBuffer)));
 

@@ -95,6 +95,11 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 - (void)recorderDidEndAdjustingExposure:(SCRecorder *__nonnull)recorder;
 
 /**
+ Called when the recorder detects face features
+ */
+- (void)recorder:(SCRecorder *__nonnull)recorder didDetectFaceFeatures:(NSArray *)features;
+
+/**
  Called when the recorder has initialized the audio in a session
  */
 - (void)recorder:(SCRecorder *__nonnull)recorder didInitializeAudioInSession:(SCRecordSession *__nonnull)session error:(NSError *__nullable)error;
