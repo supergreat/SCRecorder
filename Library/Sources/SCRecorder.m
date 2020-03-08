@@ -1068,11 +1068,15 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         CIImage *ciImage = [[CIImage alloc] initWithCVPixelBuffer:pixelBuffer
                                                            options:(__bridge NSDictionary *)attachments];
         (attachments)?CFRelease(attachments):nil;
+        id<SCRecorderDelegate> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(recorder:didOutputCIImage:)]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [delegate recorder:self didOutputCIImage:ciImage];
+            });
+        }
         
         NSArray *features = [_faceDetector featuresInImage:ciImage
-                                                   options:nil];
-        
-        id<SCRecorderDelegate> delegate = self.delegate;
+                                                   options:nil];                
         if ([delegate respondsToSelector:@selector(recorder:didDetectFaceFeatures:)]) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [delegate recorder:self didDetectFaceFeatures:features];
