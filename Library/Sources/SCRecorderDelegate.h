@@ -97,12 +97,12 @@ typedef NS_ENUM(NSInteger, SCFlashMode) {
 /**
  Called when the recorder detects face features
  */
-- (void)recorder:(SCRecorder *__nonnull)recorder didDetectFaceFeatures:(NSArray *)features;
+- (void)recorder:(SCRecorder *__nonnull)recorder didDetectFaceFeatures:(NSArray *__nonnull)features;
 
 /**
  Called when the recorder outputs a CIImage
  */
-- (void)recorder:(SCRecorder *__nonnull)recorder didOutputCIImage:(CIImage *__nonnull)image;
+- (void)recorder:(SCRecorder *__nonnull)recorder didOutputPixelBuffer:(__nonnull CVPixelBufferRef)pixelBuffer;
 
 /**
  Called when the recorder has initialized the audio in a session

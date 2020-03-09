@@ -1060,6 +1060,12 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
 
         CVPixelBufferRef pixelBuffer = (CVPixelBufferRef)CMSampleBufferGetImageBuffer(sampleBuffer);
         _playerView.pixelBuffer = pixelBuffer;
+        id<SCRecorderDelegate> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(recorder:didOutputPixelBuffer:)]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [delegate recorder:self didOutputPixelBuffer:pixelBuffer];
+            });
+        }
         
         CFDictionaryRef attachments = CMCopyDictionaryOfAttachments(kCFAllocatorDefault,
                                                                     sampleBuffer,
@@ -1068,13 +1074,6 @@ static char* SCRecorderPhotoOptionsContext = "PhotoOptionsContext";
         CIImage *ciImage = [[CIImage alloc] initWithCVPixelBuffer:pixelBuffer
                                                            options:(__bridge NSDictionary *)attachments];
         (attachments)?CFRelease(attachments):nil;
-        id<SCRecorderDelegate> delegate = self.delegate;
-        if ([delegate respondsToSelector:@selector(recorder:didOutputCIImage:)]) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [delegate recorder:self didOutputCIImage:ciImage];
-            });
-        }
-        
         NSArray *features = [_faceDetector featuresInImage:ciImage
                                                    options:nil];                
         if ([delegate respondsToSelector:@selector(recorder:didDetectFaceFeatures:)]) {
